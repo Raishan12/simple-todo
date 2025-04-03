@@ -11,7 +11,7 @@ async function getData(){
             <div class="task">${e.task}</div>
             <div class="buttons">
                 <button type="submit" onclick="updatefn('${e._id}', '${e.task}')">Edit</button>
-                <a href="/delete/${e._id}"><div class="btn">Delete</div></a>
+                <a href="/delete/${e._id}"><div class="btn bt">Delete</div></a>
             </div> 
         </div>
         `
@@ -21,6 +21,8 @@ async function getData(){
 getData()
 
 function updatefn(id, task){
+    console.log("asdasd")
+    
     document.getElementById("task").value = task
     document.getElementById("sbtn").value = "Update"
     const form = document.getElementById("taskForm")

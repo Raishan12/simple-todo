@@ -44,9 +44,13 @@ app.get("/getdata", async (req, res) => {
 
 app.post("/update/:id", async (req, res) => {
     const { id } = req.params;
+    console.log(req.body);
+    
     console.log(id);
     await collection.updateOne({ _id: new ObjectId(id) }, { $set: req.body });
     res.status(200).sendFile(join(frontend, "index.html"))
+    
+
 });
 
 app.get("/delete/:id", async (req, res) => {
