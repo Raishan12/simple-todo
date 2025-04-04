@@ -10,16 +10,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const frontend = path.join(__dirname, "..", "frontend")
 
 app.use(express.static(frontend))
-app.use(express.json())
+app.use(express.json({limit:"100mb"}))
 
 app.post("/addtask", async (req, res) => {
     console.log(req.body);
     try {
-        const { task } = req.body
+        const { task,image } = req.body
         console.log(task)
         if(!task)
             return res.status(404).send({error: "task is required"})
-        const data = await todoSchema.create( {task} )
+        const data = await todoSchema.create( {task,image} )
         res.status(201).send(data)
     }catch(err) {
         res.status(500).send({error:err})
@@ -62,6 +62,25 @@ app.get('/delete/:id',async(req,res)=>{
         res.status(500).send({error: err})
     }
 })
+
+app.post("/status/:id", async (req, res) => {
+    try {
+        const { id } = req.params
+        console.log(id);
+        
+        let status = req.body.status
+        console.log(status);
+        
+        const data = await todoSchema.findByIdAndUpdate(
+            id,
+            {status},
+            {new:true}
+        )
+        res.status(200).send(data)
+    } catch(err) {
+        res.status(500).send({error: err})
+    }
+});
 
 
 console.log("asdasd");

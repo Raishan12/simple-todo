@@ -3,19 +3,26 @@ async function getData(){
     const data = await res.json()
     console.log(data);
 
-    let str = ""
+    let st = ""
+    
     data.forEach(e=>{
-        str+=`
+        let simgs = ""
+        e.image.forEach(el=>{
+            simgs += `&nbsp;<img src="${el}" id="todoimg">`
+        })
+
+
+        st+=`
         <div class="todolist" id="todolist">
-            <div class="task" ><input type="checkbox" ${e.status?"checked":""}/><span >${e.task}</span></div>
-            <div class="buttons">
+        <div class="buttons">
+        <div class="task" ><input onchange="statusChange('${e._id}','${e.status}')" type="checkbox" ${e.status?"checked":""}/><span style="text-decoration:${e.status?'line-through':''}">${e.task}</span>&nbsp;${simgs}</div>
                 <button onclick="updatefn('${e._id}', '${e.task}')">Edit</button>
                 <button onClick='deleteTask("${e._id}")'>Delete</button>
             </div> 
         </div>
         `
     })
-    document.getElementById("todo").innerHTML=str
+    document.getElementById("todo").innerHTML=st
 }
 getData()
 
@@ -46,12 +53,15 @@ async function addTask(task){
         const res = await fetch('http://localhost:3000/addtask',{
             method:"POST",
             headers:{'Content-Type':"application/json"},
-            body:JSON.stringify({task})
+            body:JSON.stringify({task,image})
         })
         const data = await res.json()
         if(res.status==201){
             getData()
             document.getElementById("task").value=""
+            document.getElementById("file").value=""
+            document.getElementById("img").innerHTML=""
+            image = []
             alert("Task Added")
         }
         else{
@@ -70,7 +80,7 @@ async function updateTask(id,updated_task) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ task: updated_task }),
         });
-        if (response.ok) {
+        if (response.status==200) {
             alert("Task Updated");
             document.getElementById("task").value=""
             document.getElementById("sbtn").value = "Submit"
@@ -94,7 +104,109 @@ async function deleteTask(id) {
     } else {
         alert(data.error)
     }
-  }
+}
+
+let image=[]
+
+document.getElementById("taskForm").addEventListener("change",async(e)=>{
+    console.log(e.target.files)
+    let str = ""
+    i=0
+    for (let file of e.target.files) {
+        let resu = await convertBase64(file)
+        image.push(resu)
+        str += `<img src="${resu}" alt="no image selected" id="imgs"></img>`
+    }
+    console.log(image);
+    
+    
+    document.getElementById("img").innerHTML=str
+})
+
+function convertBase64(file){
+
+
+    return new Promise((resolve, reject)=>{
+        const fileReader = new FileReader()
+        fileReader.readAsDataURL(file)
+
+        fileReader.onload=()=>{
+            resolve(fileReader.result)
+        }
+
+        fileReader.onerror=(error)=>{
+            reject(error)
+        }
+
+    })
+    
+}
+
+
+async function statusChange(id, status){
+    if(status=="true"){
+        console.log("true");
+        
+        cstatus = false
+    }else{
+        console.log("false");
+        
+        cstatus = true
+    }
+
+
+    try{
+        const response = await fetch(`http://localhost:3000/status/${id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status : cstatus}),
+        });
+        if (response.status==200) {
+            alert("Task Completed");
+            getData();
+        }
+    }
+    catch(error){
+        console.log(error)
+    }
+}
+
+
+
+
+// document.querySelectorAll("input[type=checkbox]").forEach(e=>{
+//     e.addEventListener("change",async()=>{
+//         console.log("checked");
+        
+//      let torf;
+//      let id =this.id
+//         try{
+    
+//             if(this.checked){
+//                 torf = true
+//             }else{
+//                 torf = false
+//             }
+    
+//             const response = await fetch(`http://localhost:3000/status/${id}`, {
+//                 method: "POST",
+//                 headers: { "Content-Type": "application/json" },
+//                 body: JSON.stringify({ status: torf }),
+//             });
+//             if (response.status==200) {
+//                 alert("Task Completed");
+//                 getData();
+//             }
+//         }
+//         catch(error){
+//             console.log(error)
+//         }
+//     })
+// })
+
+
+
+
 
 
 
